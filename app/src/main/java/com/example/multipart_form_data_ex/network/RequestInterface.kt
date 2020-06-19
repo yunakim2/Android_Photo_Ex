@@ -19,7 +19,8 @@ interface RequestInterface {
 
     @Multipart
     @POST("/user/profile")
-    fun profile(@Header("Contnet-Type") content : String, @Header("jwt") jwt : String, @Part file : MultipartBody.Part,@Part("profile") requestBody: RequestBody ) : Call<ResponseProfileData>
+    fun profile(@Header("Contnet-Type") content : String, @Header("jwt") jwt : String, @Part file : MultipartBody.Part,@Part("profile") requestBody: RequestBody )
+            : Call<ResponseProfileData>
 
 
 

@@ -298,8 +298,6 @@ class MainActivity : AppCompatActivity() {
         val byteArray = stream.toByteArray()
 
 
-
-
         val fileReqBody = RequestBody.create(MediaType.parse("image/png"),byteArray)
 
         val part = MultipartBody.Part.createFormData("profile",mFileName,fileReqBody)

@@ -4,7 +4,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-val BASE_URL = "http://13.209.144.115:3002"
+
 object RequestToServer {
 
     var retrofit = Retrofit.Builder()

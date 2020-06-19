@@ -5,7 +5,7 @@ data class ResponseProfileData(
     val status : Int,
     val success : Boolean,
     val message : String,
-    val data : ResponseImg
+    val data : ArrayList<ResponseImg>
 )
 data class ResponseImg(
     val name : String,

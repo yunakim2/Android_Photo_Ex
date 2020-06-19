@@ -37,6 +37,7 @@ class LoginActivity : AppCompatActivity() {
                     object : Callback<ResponseLoginData> {
                         override fun onFailure(call: Call<ResponseLoginData>, t: Throwable) {
                             Log.d("통신실패", "${t}")
+                            Log.d("?????", "????")
                         }
 
                         override fun onResponse(
