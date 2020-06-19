@@ -6,6 +6,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -22,6 +24,7 @@ import com.example.multipart_form_data_ex.data.ResponseProfileData
 import com.example.multipart_form_data_ex.data.ResponseUserData
 import com.example.multipart_form_data_ex.network.RequestInterface
 import com.example.multipart_form_data_ex.network.RequestToServer
+import com.example.multipart_form_data_ex.network.RequestToServerOkHttp
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
@@ -32,7 +35,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -286,34 +291,44 @@ class MainActivity : AppCompatActivity() {
     fun postProfile(uri: Uri)
     {
 
-        val retrofit = getRetrofitClient(this)
-        val uploadAPIs: RequestInterface = retrofit.create<RequestInterface>(RequestInterface::class.java)
-        val fileReqBody = RequestBody.create(MediaType.parse("image/*"),file)
+
+        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver,uri)
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG,100,stream)
+        val byteArray = stream.toByteArray()
+
+
+
+
+        val fileReqBody = RequestBody.create(MediaType.parse("image/png"),byteArray)
 
         val part = MultipartBody.Part.createFormData("profile",mFileName,fileReqBody)
         val description = RequestBody.create(MediaType.parse("text/plain"),"image-type")
-        val call  = uploadAPIs.profile(content = "multipart/form-data",jwt = jwt,file = part,requestBody = description)
-        call.enqueue(object :Callback<ResponseProfileData>{
-            override fun onFailure(call: Call<ResponseProfileData>, t: Throwable) {
-                Log.d("서버연결실패", "${t}")
-            }
 
-            override fun onResponse(
-                call: Call<ResponseProfileData>,
-                response: Response<ResponseProfileData>
-            ) {
-                if(response.isSuccessful)
-                {
-                    Log.d("이미지 서버 연결 성공", "${response.body()!!.message}")
-                    if(response.body()!!.success)
-                    {
-                        Toast.makeText(this@MainActivity, "${response.body()!!.message}", Toast.LENGTH_SHORT).show()
-                        Log.d("이미지 전송 성공", "성공")
-                    }
-                }
-            }
+        val requestToServer=RequestToServerOkHttp
+                requestToServer.service.profile(content = "multipart/form-data",jwt = jwt,file = part,requestBody = description)
+                    .enqueue(
+                        object : Callback<ResponseProfileData> {
+                            override fun onFailure(call: Call<ResponseProfileData>, t: Throwable) {
+                                Log.d("통신실패", "${t}")
+                            }
 
-        })
+                            override fun onResponse(
+                                call: Call<ResponseProfileData>,
+                                response: Response<ResponseProfileData>
+                            ) {
+                                if (response.isSuccessful) {
+                                    Log.d("이미지 서버연결 성공", "${response.body()!!.message}")
+                                    if(response.body()!!.success)
+                                    {
+                                        Toast.makeText(applicationContext, "이미지 서버 업로드 성공", Toast.LENGTH_LONG).show()
+                                    }
+
+                                }
+
+                            }
+                        }
+                    )
 
 
 
@@ -349,19 +364,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-    private val BASE_URL = "http://13.209.144.115:3002"
-
-    fun getRetrofitClient(context : Context) : Retrofit
-    {
-
-        val okHttpClient = OkHttpClient.Builder().build()
-        val retrofit = Retrofit.Builder().baseUrl(BASE_URL).client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create()).build()
-
-        return retrofit
-
-    }
     }
 
 
